@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useLoop } from '@tresjs/core'
 import type { Mesh, Points, PointLight } from 'three'
 import Part from './Part.vue'
+import { getTex } from './textures'
 
 const props = defineProps<{ night: number }>()
 
@@ -92,6 +93,7 @@ const flies = ref<Points>()
 const { onBeforeRender } = useLoop()
 onBeforeRender(({ elapsed }) => {
   if (flies.value) { flies.value.rotation.y = elapsed * 0.04; flies.value.position.y = Math.sin(elapsed * 0.8) * 0.2 }
+  getTex('water', false, [2, 2]).offset.set(elapsed * 0.02, elapsed * 0.012) // вода тече
   flames.value.forEach((m, i) => { m.scale.y = 0.85 + 0.35 * Math.sin(elapsed * 9 + i * 2); m.rotation.y = elapsed * 2 + i })
   if (fireLight.value) fireLight.value.intensity = (2.2 + Math.sin(elapsed * 13) * 0.5 + Math.sin(elapsed * 7.3) * 0.4) * (0.4 + props.night * 1.3)
 })
@@ -100,29 +102,29 @@ onBeforeRender(({ elapsed }) => {
 <template>
   <TresGroup>
     <!-- земля, галявина, стежка -->
-    <Part kind="cyl" :args="[60, 60, 0.2, 64]" color="#4fae6b" :position="[0, -0.12, 0]" :ink="0" no-shadow :receive="false" />
-    <Part kind="cyl" :args="[11, 11, 0.02, 48]" color="#6cc27e" :position="[0, -0.015, 0]" :ink="0.02" no-shadow :receive="false" />
-    <Part kind="box" :args="[1.6, 0.02, 9]" color="#e3bd8c" :position="[0, -0.005, 7.4]" :ink="0.012" no-shadow :receive="false" />
+    <Part kind="cyl" :args="[60, 60, 0.2, 64]" color="#4fae6b" map="grass" :repeat="[40, 40]" :position="[0, -0.12, 0]" :ink="0" no-shadow :receive="false" />
+    <Part kind="cyl" :args="[11, 11, 0.02, 48]" color="#6cc27e" map="grass" :repeat="[7, 7]" :position="[0, -0.015, 0]" :ink="0.02" no-shadow :receive="false" />
+    <Part kind="box" :args="[1.6, 0.02, 9]" color="#e3bd8c" map="pebbles" :tile="1.2" :position="[0, -0.005, 7.4]" :ink="0.012" no-shadow :receive="false" />
 
     <!-- пагорби -->
-    <Part v-for="(h, i) in hills" :key="'h' + i" kind="sphere" :args="[h.s, 16, 16]" :color="h.c" :position="[h.x, -1.5, h.z]" :scale="[1, 0.45, 1]" :ink="0.08" no-shadow :receive="false" />
+    <Part v-for="(h, i) in hills" :key="'h' + i" kind="sphere" :args="[h.s, 16, 16]" :color="h.c" map="grass" :repeat="[6, 3]" :position="[h.x, -1.5, h.z]" :scale="[1, 0.45, 1]" :ink="0.08" no-shadow :receive="false" />
 
     <!-- дерева -->
     <TresGroup v-for="(t, i) in trees" :key="i" :position="[t.x, 0, t.z]" :scale="[t.s, t.s, t.s]" :rotation="[0, i, 0]">
-      <Part kind="cyl" :args="[0.18, 0.22, 0.8, 8]" :color="wood" :position="[0, 0.4, 0]" :ink="0.03" no-shadow :receive="false" />
+      <Part kind="cyl" :args="[0.18, 0.22, 0.8, 8]" :color="wood" map="bark" :repeat="[3, 1]" :position="[0, 0.4, 0]" :ink="0.03" no-shadow :receive="false" />
       <template v-if="t.round">
-        <Part kind="sphere" :args="[1.1, 14, 14]" :color="t.c" :position="[0, 2.1, 0]" :ink="0.04" no-shadow :receive="false" />
-        <Part kind="sphere" :args="[0.7, 12, 12]" :color="t.c" :position="[0.55, 2.9, 0.2]" :ink="0.04" no-shadow :receive="false" />
+        <Part kind="sphere" :args="[1.1, 14, 14]" :color="t.c" map="leaves" :repeat="[3, 2]" :position="[0, 2.1, 0]" :ink="0.04" no-shadow :receive="false" />
+        <Part kind="sphere" :args="[0.7, 12, 12]" :color="t.c" map="leaves" :repeat="[3, 2]" :position="[0.55, 2.9, 0.2]" :ink="0.04" no-shadow :receive="false" />
       </template>
       <template v-else>
-        <Part kind="cone" :args="[1.2, 1.8, 8]" :color="t.c" :position="[0, 1.7, 0]" :ink="0.04" no-shadow :receive="false" />
-        <Part kind="cone" :args="[0.9, 1.5, 8]" :color="t.c" :position="[0, 2.6, 0]" :ink="0.04" no-shadow :receive="false" />
-        <Part kind="cone" :args="[0.6, 1.2, 8]" :color="t.c" :position="[0, 3.4, 0]" :ink="0.04" no-shadow :receive="false" />
+        <Part kind="cone" :args="[1.2, 1.8, 8]" :color="t.c" map="needles" :repeat="[4, 2]" :position="[0, 1.7, 0]" :ink="0.04" no-shadow :receive="false" />
+        <Part kind="cone" :args="[0.9, 1.5, 8]" :color="t.c" map="needles" :repeat="[4, 2]" :position="[0, 2.6, 0]" :ink="0.04" no-shadow :receive="false" />
+        <Part kind="cone" :args="[0.6, 1.2, 8]" :color="t.c" map="needles" :repeat="[4, 2]" :position="[0, 3.4, 0]" :ink="0.04" no-shadow :receive="false" />
       </template>
     </TresGroup>
 
     <!-- кущі й камені -->
-    <Part v-for="(b, i) in bits" :key="'b' + i" kind="sphere" :args="[b.s, 10, 10]" :color="b.c" :position="[b.x, b.s * 0.45, b.z]" :scale="[1, b.bush ? 0.75 : 0.6, 1]" :ink="0.03" no-shadow :receive="false" />
+    <Part v-for="(b, i) in bits" :key="'b' + i" kind="sphere" :args="[b.s, 10, 10]" :color="b.c" :map="b.bush ? 'leaves' : 'stone'" :repeat="[2, 2]" :position="[b.x, b.s * 0.45, b.z]" :scale="[1, b.bush ? 0.75 : 0.6, 1]" :ink="0.03" no-shadow :receive="false" />
 
     <!-- трава -->
     <Part v-for="(t, i) in tufts" :key="'t' + i" kind="cone" :args="[0.12, 0.45, 4]" color="#3fb36a" :position="[t.x, 0.2 * t.s, t.z]" :rotation="[0, t.r, 0]" :scale="[t.s, t.s, t.s]" :ink="0.01" no-shadow :receive="false" />
@@ -134,12 +136,12 @@ onBeforeRender(({ elapsed }) => {
     </TresGroup>
 
     <!-- паркан -->
-    <Part v-for="x in posts" :key="'p' + x" kind="box" :args="[0.12, 0.7, 0.12]" color="#f4e2c0" :position="[x, 0.35, 6.2]" :ink="0.015" no-shadow :receive="false" />
-    <Part v-for="s in [-4.5, 4.5]" :key="'r' + s" kind="box" :args="[5, 0.07, 0.05]" color="#e8cfa6" :position="[s, 0.5, 6.2]" :ink="0.012" no-shadow :receive="false" />
-    <Part v-for="s in [-4.5, 4.5]" :key="'r2' + s" kind="box" :args="[5, 0.07, 0.05]" color="#e8cfa6" :position="[s, 0.25, 6.2]" :ink="0.012" no-shadow :receive="false" />
+    <Part v-for="x in posts" :key="'p' + x" kind="box" :args="[0.12, 0.7, 0.12]" color="#f4e2c0" map="wood" :tile="0.5" :position="[x, 0.35, 6.2]" :ink="0.015" no-shadow :receive="false" />
+    <Part v-for="s in [-4.5, 4.5]" :key="'r' + s" kind="box" :args="[5, 0.07, 0.05]" color="#e8cfa6" map="wood" :tile="0.8" :position="[s, 0.5, 6.2]" :ink="0.012" no-shadow :receive="false" />
+    <Part v-for="s in [-4.5, 4.5]" :key="'r2' + s" kind="box" :args="[5, 0.07, 0.05]" color="#e8cfa6" map="wood" :tile="0.8" :position="[s, 0.25, 6.2]" :ink="0.012" no-shadow :receive="false" />
 
     <!-- скринька -->
-    <Part kind="box" :args="[0.1, 0.9, 0.1]" color="#8a5530" :position="[1.9, 0.45, 8]" :ink="0.015" no-shadow />
+    <Part kind="box" :args="[0.1, 0.9, 0.1]" color="#8a5530" map="wood" :tile="0.5" :position="[1.9, 0.45, 8]" :ink="0.015" no-shadow />
     <Part kind="box" :args="[0.4, 0.28, 0.55]" color="#ff5fa8" :position="[1.9, 1, 8]" :ink="0.02" no-shadow />
     <Part kind="box" :args="[0.04, 0.26, 0.04]" color="#ffc83d" :position="[2.12, 1.15, 7.85]" :ink="0.008" no-shadow />
 
@@ -150,7 +152,7 @@ onBeforeRender(({ elapsed }) => {
     <TresPointLight :position="[-1.7, 2.3, 4.8]" color="#ffd9a0" :intensity="1 + night * 7" :distance="9" />
 
     <!-- вогнище -->
-    <Part v-for="(s, i) in stones" :key="'s' + i" kind="sphere" :args="[0.13, 8, 8]" color="#a59fc4" :position="[s.x, 0.1, s.z]" :scale="[1, 0.7, 1]" :ink="0.015" no-shadow />
+    <Part v-for="(s, i) in stones" :key="'s' + i" kind="sphere" :args="[0.13, 8, 8]" color="#a59fc4" map="stone" :position="[s.x, 0.1, s.z]" :scale="[1, 0.7, 1]" :ink="0.015" no-shadow />
     <Part kind="cyl" :args="[0.07, 0.07, 0.8, 8]" :color="wood" :position="[-4, 0.1, 7.5]" :rotation="[0, 0, Math.PI / 2]" :ink="0.012" no-shadow />
     <Part kind="cyl" :args="[0.07, 0.07, 0.8, 8]" :color="wood" :position="[-4, 0.14, 7.5]" :rotation="[Math.PI / 2, 0, 0]" :ink="0.012" no-shadow />
     <TresMesh v-for="(f, i) in flameDefs" :key="'fl' + i" ref="flames" :position="[-4, 0.2 + f.h / 2, 7.5]">
@@ -160,10 +162,10 @@ onBeforeRender(({ elapsed }) => {
     <TresPointLight ref="fireLight" :position="[-4, 0.9, 7.5]" color="#ff9a3d" :intensity="2" :distance="8" />
 
     <!-- дрова біля будинку -->
-    <Part v-for="(l, i) in [[0, 0.22], [0.46, 0.22], [0.23, 0.62]]" :key="'l' + i" kind="cyl" :args="[0.22, 0.22, 1.6, 10]" color="#b9763f" :position="[5.2 + l[0], l[1], -1.2]" :rotation="[Math.PI / 2, 0, 0]" :ink="0.02" no-shadow />
+    <Part v-for="(l, i) in [[0, 0.22], [0.46, 0.22], [0.23, 0.62]]" :key="'l' + i" kind="cyl" :args="[0.22, 0.22, 1.6, 10]" color="#b9763f" map="wood" rotate-map :repeat="[1, 2]" :position="[5.2 + l[0], l[1], -1.2]" :rotation="[Math.PI / 2, 0, 0]" :ink="0.02" no-shadow />
 
     <!-- ставок -->
-    <Part kind="cyl" :args="[2, 2, 0.04, 40]" color="#58c6f5" :position="[-6.8, 0.02, 3.2]" :scale="[1.5, 1, 1.1]" :ink="0.03" no-shadow :receive="false" />
+    <Part kind="cyl" :args="[2, 2, 0.04, 40]" color="#58c6f5" map="water" :repeat="[2, 2]" :position="[-6.8, 0.02, 3.2]" :scale="[1.5, 1, 1.1]" :ink="0.03" no-shadow :receive="false" />
     <Part v-for="(p, i) in [[-7.4, 3.0], [-6.2, 3.8], [-7.9, 3.9]]" :key="'lp' + i" kind="cyl" :args="[0.28, 0.28, 0.02, 12]" color="#3fb36a" :position="[p[0], 0.06, p[1]]" :ink="0.012" no-shadow :receive="false" />
     <Part kind="sphere" :args="[0.09, 8, 8]" color="#ff5fa8" :position="[-6.2, 0.14, 3.8]" :ink="0.01" no-shadow :receive="false" />
 

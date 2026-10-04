@@ -8,6 +8,7 @@ import {
 import gsap from 'gsap'
 import { useFocusStore } from '@/stores/focus'
 import { gradient } from './toon'
+import { floorWood } from './textures'
 import HotSpot from './HotSpot.vue'
 import Part from './Part.vue'
 
@@ -59,20 +60,8 @@ const glowTex = (() => {
   return new CanvasTexture(c)
 })()
 
-// паркет малюємо на canvas, зі «швами» кольору контуру
-const floorTex = (() => {
-  const c = document.createElement('canvas'); c.width = c.height = 512
-  const g = c.getContext('2d')!
-  const shades = ['#d9965f', '#e3a36d', '#cf8a55', '#dc9c66']
-  for (let i = 0; i < 8; i++) {
-    g.fillStyle = shades[i % 4]; g.fillRect(0, i * 64, 512, 64)
-    g.fillStyle = '#0d0816'
-    g.fillRect(0, i * 64, 512, 3)
-    g.fillRect((i * 173) % 512, i * 64, 3, 64)
-    g.fillRect((i * 173 + 260) % 512, i * 64, 3, 64)
-  }
-  const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; return t
-})()
+// паркет: дошки з волокнами, сучками й цвяхами
+const floorTex = floorWood()
 
 // кіт підстрибує й крутиться, коли його гладять
 watch(() => store.pets, () => {
@@ -105,9 +94,9 @@ onBeforeRender(({ elapsed }) => {
       <TresPlaneGeometry :args="[7, 6]" />
       <TresMeshToonMaterial :map="floorTex" :gradient-map="gradient" />
     </TresMesh>
-    <Part kind="box" :args="[7, 4, 0.1]" color="#9a86f2" :position="[0, 2, -3]" :ink="0.03" no-shadow />
-    <Part kind="box" :args="[6, 4, 0.1]" color="#8672e6" :position="[-3.5, 2, 0]" :rotation="[0, Math.PI / 2, 0]" :ink="0.03" no-shadow />
-    <Part kind="cyl" :args="[1.6, 1.6, 0.02, 48]" color="#ff6fb5" :position="[0, 0.012, -0.2]" :ink="0.02" no-shadow />
+    <Part kind="box" :args="[7, 4, 0.1]" color="#9a86f2" map="wallpaper" :tile="1.4" :position="[0, 2, -3]" :ink="0.03" no-shadow />
+    <Part kind="box" :args="[6, 4, 0.1]" color="#8672e6" map="wallpaper" :tile="1.4" :position="[-3.5, 2, 0]" :rotation="[0, Math.PI / 2, 0]" :ink="0.03" no-shadow />
+    <Part kind="cyl" :args="[1.6, 1.6, 0.02, 48]" map="rug" color="#ff6fb5" :position="[0, 0.012, -0.2]" :ink="0.02" no-shadow />
 
     <!-- неонова смуга + сяйво від неї по стіні -->
     <TresMesh ref="neon" :position="[0, 3.4, -2.93]">
@@ -148,18 +137,18 @@ onBeforeRender(({ elapsed }) => {
     </TresGroup>
 
     <!-- стіл -->
-    <Part kind="box" :args="[3.2, 0.1, 1.3]" color="#e8a56c" :position="[0, 0.8, -2.2]" />
-    <Part v-for="(p, i) in deskLegs" :key="i" kind="box" :args="[0.1, 0.8, 0.1]" color="#b9763f" :position="[p[0], 0.4, p[1]]" :ink="0.015" />
+    <Part kind="box" :args="[3.2, 0.1, 1.3]" map="wood" :tile="1.6" color="#e8a56c" :position="[0, 0.8, -2.2]" />
+    <Part v-for="(p, i) in deskLegs" :key="i" kind="box" :args="[0.1, 0.8, 0.1]" color="#b9763f" map="wood" :tile="0.8" :position="[p[0], 0.4, p[1]]" :ink="0.015" />
 
     <!-- монітор (ніжка тепер не пробиває екран) -->
-    <Part kind="box" :args="[0.5, 0.04, 0.3]" color="#2a2340" :position="[0, 0.87, -2.35]" :ink="0.012" />
-    <Part kind="box" :args="[0.12, 0.25, 0.08]" color="#2a2340" :position="[0, 1.0, -2.43]" :ink="0.012" />
-    <Part kind="box" :args="[1.6, 0.95, 0.06]" color="#2a2340" :position="[0, 1.55, -2.38]" />
+    <Part kind="box" :args="[0.5, 0.04, 0.3]" spot="monitor" color="#2a2340" :position="[0, 0.87, -2.35]" :ink="0.012" />
+    <Part kind="box" :args="[0.12, 0.25, 0.08]" spot="monitor" color="#2a2340" :position="[0, 1.0, -2.43]" :ink="0.012" />
+    <Part kind="box" :args="[1.6, 0.95, 0.06]" spot="monitor" color="#2a2340" :position="[0, 1.55, -2.38]" />
     <TresMesh ref="screen" :position="[0, 1.55, -2.34]">
       <TresPlaneGeometry :args="[1.48, 0.83]" />
       <TresMeshStandardMaterial color="#0c2a33" emissive="#62f0ff" :emissive-intensity="1" />
     </TresMesh>
-    <Part kind="box" :args="[1, 0.04, 0.3]" color="#3a3158" :position="[0, 0.87, -1.85]" :ink="0.012" />
+    <Part kind="box" :args="[1, 0.04, 0.3]" spot="monitor" color="#3a3158" :position="[0, 0.87, -1.85]" :ink="0.012" />
     <Part kind="cyl" :args="[0.07, 0.06, 0.12, 16]" color="#ffffff" :position="[0.95, 0.91, -1.95]" :ink="0.012" />
     <!-- стос книжок на столі -->
     <Part kind="box" :args="[0.5, 0.08, 0.35]" color="#3fe0f0" :position="[1.15, 0.89, -2.5]" :ink="0.012" />
@@ -171,12 +160,12 @@ onBeforeRender(({ elapsed }) => {
     <TresGroup :position="[0.15, 0, -1.15]" :rotation="[0, 0.35, 0]">
       <Part kind="cyl" :args="[0.32, 0.32, 0.05, 16]" color="#2a2340" :position="[0, 0.03, 0]" :ink="0.012" />
       <Part kind="cyl" :args="[0.05, 0.05, 0.5, 10]" color="#2a2340" :position="[0, 0.27, 0]" :ink="0.01" />
-      <Part kind="box" :args="[0.7, 0.1, 0.7]" color="#ff5fa8" :position="[0, 0.52, 0]" :ink="0.02" />
-      <Part kind="box" :args="[0.7, 0.75, 0.08]" color="#ff5fa8" :position="[0, 0.95, 0.36]" :ink="0.02" />
+      <Part kind="box" :args="[0.7, 0.1, 0.7]" map="fabric" :tile="0.5" color="#ff5fa8" :position="[0, 0.52, 0]" :ink="0.02" />
+      <Part kind="box" :args="[0.7, 0.75, 0.08]" map="fabric" :tile="0.5" color="#ff5fa8" :position="[0, 0.95, 0.36]" :ink="0.02" />
     </TresGroup>
 
     <!-- пуф -->
-    <Part kind="sphere" :args="[0.5, 20, 20]" color="#8a63ff" :position="[-2.3, 0.32, 0.9]" :scale="[1.1, 0.7, 1]" :ink="0.03" />
+    <Part kind="sphere" :args="[0.5, 20, 20]" map="quilt" :repeat="[4, 3]" color="#8a63ff" :position="[-2.3, 0.32, 0.9]" :scale="[1.1, 0.7, 1]" :ink="0.03" />
 
     <!-- лампа з видимим конусом світла -->
     <TresGroup :position="[-1.2, 0.85, -2.3]">
@@ -191,31 +180,31 @@ onBeforeRender(({ elapsed }) => {
 
     <!-- полиця з книгами -->
     <TresGroup :position="[2.3, 2.2, -2.78]">
-      <Part kind="box" :args="[2, 0.08, 0.4]" color="#e8a56c" />
-      <Part v-for="(b, i) in books" :key="i" kind="box" :args="[0.13, b[1], 0.3]" :color="b[0]" :position="[-0.75 + i * 0.17, 0.04 + b[1] / 2, 0]" :ink="0.012" />
+      <Part kind="box" :args="[2, 0.08, 0.4]" spot="shelf" map="wood" :tile="1.6" color="#e8a56c" />
+      <Part v-for="(b, i) in books" :key="i" kind="box" :args="[0.13, b[1], 0.3]" spot="shelf" :color="b[0]" :position="[-0.75 + i * 0.17, 0.04 + b[1] / 2, 0]" :ink="0.012" />
     </TresGroup>
     <HotSpot id="shelf" :position="[2.3, 2.5, -2.8]" :size="[2.1, 1.1, 0.6]" />
 
     <!-- кіт Баг -->
     <TresGroup ref="catRoot" :position="[1.8, 0.28, -0.5]" :rotation="[0, -0.6, 0]">
       <TresGroup ref="catBody">
-        <Part kind="sphere" :args="[0.35, 24, 24]" color="#ffae5c" :scale="[1.3, 0.8, 0.9]" :ink="0.02" />
+        <Part kind="sphere" :args="[0.35, 24, 24]" spot="cat" map="fur" :repeat="[3, 1]" color="#ffae5c" :scale="[1.3, 0.8, 0.9]" :ink="0.02" />
       </TresGroup>
-      <Part kind="sphere" :args="[0.22, 24, 24]" color="#ffae5c" :position="[0.45, 0.2, 0]" :ink="0.02" />
-      <Part kind="cone" :args="[0.07, 0.14, 4]" color="#ff8f45" :position="[0.5, 0.42, 0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
-      <Part kind="cone" :args="[0.07, 0.14, 4]" color="#ff8f45" :position="[0.5, 0.42, -0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
+      <Part kind="sphere" :args="[0.22, 24, 24]" spot="cat" map="fur" :repeat="[2, 1]" color="#ffae5c" :position="[0.45, 0.2, 0]" :ink="0.02" />
+      <Part kind="cone" :args="[0.07, 0.14, 4]" spot="cat" color="#ff8f45" :position="[0.5, 0.42, 0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
+      <Part kind="cone" :args="[0.07, 0.14, 4]" spot="cat" color="#ff8f45" :position="[0.5, 0.42, -0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
       <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0.63, 0.26, 0.09]" :ink="0" />
       <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0.63, 0.26, -0.09]" :ink="0" />
       <TresGroup ref="tail" :position="[-0.42, 0.05, 0]">
-        <Part kind="cyl" :args="[0.05, 0.04, 0.5, 10]" color="#ffae5c" :position="[-0.25, 0.1, 0]" :rotation="[0, 0, Math.PI / 2]" :ink="0.015" />
+        <Part kind="cyl" :args="[0.05, 0.04, 0.5, 10]" spot="cat" color="#ffae5c" :position="[-0.25, 0.1, 0]" :rotation="[0, 0, Math.PI / 2]" :ink="0.015" />
       </TresGroup>
     </TresGroup>
     <HotSpot id="cat" :position="[1.8, 0.4, -0.5]" :size="[1.1, 0.8, 1]" />
 
     <!-- рослина -->
     <TresGroup ref="plant" :position="[-2.8, 0, -2.5]">
-      <Part kind="cyl" :args="[0.28, 0.2, 0.4, 16]" color="#ff6b5e" :position="[0, 0.2, 0]" />
-      <Part v-for="(l, i) in leaves" :key="i" kind="sphere" :args="[l[3], 16, 16]" color="#3fd180" :position="[l[0], l[1], l[2]]" :scale="[1, 1.4, 1]" :ink="0.018" />
+      <Part kind="cyl" :args="[0.28, 0.2, 0.4, 16]" spot="plant" color="#ff6b5e" :position="[0, 0.2, 0]" />
+      <Part v-for="(l, i) in leaves" :key="i" kind="sphere" :args="[l[3], 16, 16]" spot="plant" map="leaves" :repeat="[2, 1]" color="#3fd180" :position="[l[0], l[1], l[2]]" :scale="[1, 1.4, 1]" :ink="0.018" />
     </TresGroup>
     <HotSpot id="plant" :position="[-2.8, 0.7, -2.5]" :size="[0.9, 1.4, 0.9]" />
   </TresGroup>

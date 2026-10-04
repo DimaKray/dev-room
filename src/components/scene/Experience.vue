@@ -9,6 +9,7 @@ import Room from './Room.vue'
 import Cabin from './Cabin.vue'
 import Forest from './Forest.vue'
 import Dust from './Dust.vue'
+import Markers from './Markers.vue'
 
 const store = useFocusStore()
 
@@ -52,5 +53,6 @@ const hex = (day: string, night: string) => '#' + new Color(day).lerp(new Color(
     <Cabin />
     <Room :night="env.t" />
     <Dust />
+    <Markers />
   </TresCanvas>
 </template>
