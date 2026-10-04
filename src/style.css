@@ -1,0 +1,29 @@
+:root {
+  --night: #120d24;
+  --plum: #2a1f4d;
+  --lav: #cbb8ff;
+  --pink: #ff6fb5;
+  --cyan: #62f0ff;
+  --text: #f4efff;
+  --glass: rgba(24, 17, 48, 0.55);
+  --line: rgba(255, 255, 255, 0.14);
+  font-family: 'Space Grotesk Variable', system-ui, sans-serif;
+  color: var(--text);
+}
+* { box-sizing: border-box; margin: 0; }
+html { height: 100%; overflow: hidden; background: var(--night); }
+body { height: 100%; overflow: hidden; }
+#app { height: 100%; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
