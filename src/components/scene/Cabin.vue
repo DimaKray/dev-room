@@ -9,16 +9,19 @@ import Part from './Part.vue'
 // Зовнішня «оболонка» хатинки: передня й права стіни та дах.
 // Коли заходимо, дах злітає вгору, а стіни занурюються в землю.
 const store = useFocusStore()
-const a = reactive({ roof: 0, walls: 0 })
+const a = reactive({ roof: 0, walls: 0, door: 0 })
 
 watch(() => store.inside, (inside) => {
   gsap.killTweensOf(a)
   if (inside) {
-    gsap.to(a, { roof: 1, duration: 1.5, ease: 'power3.inOut' })
-    gsap.to(a, { walls: 1, duration: 1.3, delay: 0.4, ease: 'power2.inOut' })
+    // спершу двері відчиняються, потім злітає дах і опускаються стіни
+    gsap.to(a, { door: 1, duration: 0.5, ease: 'power2.out' })
+    gsap.to(a, { roof: 1, duration: 1.5, delay: 0.5, ease: 'power3.inOut' })
+    gsap.to(a, { walls: 1, duration: 1.3, delay: 0.9, ease: 'power2.inOut' })
   } else {
     gsap.to(a, { walls: 0, duration: 1.2, ease: 'power2.inOut' })
     gsap.to(a, { roof: 0, duration: 1.4, delay: 0.9, ease: 'power3.inOut' })
+    gsap.to(a, { door: 0, duration: 0.5, delay: 2.1, ease: 'power2.in' })
   }
 })
 
@@ -52,8 +55,10 @@ const flowerColors = ['#ff5fa8', '#ffc83d', '#ffffff', '#ff5fa8']
     <!-- передня стіна з дверима, вікнами й квітами -->
     <TresGroup :position="[0, 2 - a.walls * 4.4, 3]">
       <Part kind="box" :args="[7, 4, 0.1]" color="#d49a66" map="logs" :tile="1" :ink="0.03" no-shadow />
-      <Part kind="box" :args="[1.1, 2.1, 0.08]" spot="outside" map="wood" :tile="0.8" color="#8a4f2b" :position="[0, -0.95, 0.08]" :ink="0.02" no-shadow />
-      <Part kind="sphere" :args="[0.05, 10, 10]" color="#ffd166" :position="[0.4, -0.95, 0.16]" :ink="0.008" no-shadow />
+      <TresGroup :position="[-0.55, -0.95, 0.08]" :rotation="[0, -a.door * 1.6, 0]">
+        <Part kind="box" :args="[1.1, 2.1, 0.08]" color="#8a4f2b" map="wood" :tile="0.8" spot="outside" :position="[0.55, 0, 0]" :ink="0.02" no-shadow />
+        <Part kind="sphere" :args="[0.05, 10, 10]" color="#ffd166" :position="[0.95, 0, 0.08]" :ink="0.008" no-shadow />
+      </TresGroup>
       <TresGroup v-for="x in [-2.2, 2.2]" :key="x" :position="[x, 0, 0]">
         <Part kind="box" :args="[1.1, 1.1, 0.05]" color="#ffd88a" emissive="#ffb347" :emissive-intensity="0.8" :position="[0, 0.3, 0.07]" :ink="0.025" no-shadow />
         <Part kind="box" :args="[1.3, 0.2, 0.28]" map="wood" :tile="0.6" color="#8a4f2b" :position="[0, -0.42, 0.2]" :ink="0.015" no-shadow />

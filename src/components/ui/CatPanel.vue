@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useFocusStore } from '@/stores/focus'
 import { purr } from '@/lib/sound'
+import { t, tr } from '@/i18n'
 import { ABOUT, FACTS, TIMELINE } from '@/data/profile'
 
 const store = useFocusStore()
@@ -11,6 +12,7 @@ let n = 0
 function pet() {
   store.pet() // кіт у 3D підстрибне
   if (store.sound) purr()
+  if (store.pets % 10 === 0) store.say(t('petMilestone'))
   const id = ++n
   hearts.value.push({ id, x: 8 + Math.random() * 84 })
   setTimeout(() => (hearts.value = hearts.value.filter((h) => h.id !== id)), 1400)
@@ -19,20 +21,20 @@ function pet() {
 
 <template>
   <div>
-    <p class="about">{{ ABOUT }}</p>
-    <ul class="facts"><li v-for="f in FACTS" :key="f">{{ f }}</li></ul>
+    <p class="about">{{ tr(ABOUT) }}</p>
+    <ul class="facts"><li v-for="(f, i) in FACTS" :key="i">{{ tr(f) }}</li></ul>
 
     <div class="pet-row">
-      <button class="pet" @click="pet">Погладити Бага</button>
-      <span v-if="store.pets" class="count">мурр × {{ store.pets }}</span>
+      <button class="pet" @click="pet">{{ t('pet') }}</button>
+      <span v-if="store.pets" class="count">{{ t('purr') }} × {{ store.pets }}</span>
       <div class="hearts" aria-hidden="true"><i v-for="h in hearts" :key="h.id" :style="{ left: h.x + '%' }">♥</i></div>
     </div>
 
     <ol class="timeline">
-      <li v-for="(t, i) in TIMELINE" :key="t.years" :style="{ '--i': i }">
-        <span class="years">{{ t.years }}</span>
-        <strong>{{ t.title }}</strong>
-        <p>{{ t.text }}</p>
+      <li v-for="(row, i) in TIMELINE" :key="i" :style="{ '--i': i }">
+        <span class="years">{{ tr(row.years) }}</span>
+        <strong>{{ tr(row.title) }}</strong>
+        <p>{{ tr(row.text) }}</p>
       </li>
     </ol>
   </div>

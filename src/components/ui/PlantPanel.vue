@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useFocusStore } from '@/stores/focus'
 import { blip } from '@/lib/sound'
+import { lang, t } from '@/i18n'
 import { CONTACTS } from '@/data/profile'
 
 const store = useFocusStore()
@@ -20,22 +21,22 @@ async function copy() {
     <li style="--i: 0">
       <button class="row" @click="copy">
         <span class="lab">Email</span><span class="val">{{ CONTACTS.email }}</span>
-        <span class="act" :class="{ ok: copied }">{{ copied ? 'Скопійовано ✓' : 'Копіювати' }}</span>
+        <span class="act" :class="{ ok: copied }">{{ copied ? t('copied') : t('copy') }}</span>
       </button>
     </li>
     <li style="--i: 1">
       <a class="row" :href="CONTACTS.github.url" target="_blank" rel="noopener">
-        <span class="lab">GitHub</span><span class="val">{{ CONTACTS.github.label }}</span><span class="act">Відкрити ↗</span>
+        <span class="lab">GitHub</span><span class="val">{{ CONTACTS.github.label }}</span><span class="act">{{ t('open') }}</span>
       </a>
     </li>
     <li style="--i: 2">
       <a class="row" :href="CONTACTS.telegram.url" target="_blank" rel="noopener">
-        <span class="lab">Telegram</span><span class="val">{{ CONTACTS.telegram.label }}</span><span class="act">Відкрити ↗</span>
+        <span class="lab">Telegram</span><span class="val">{{ CONTACTS.telegram.label }}</span><span class="act">{{ t('open') }}</span>
       </a>
     </li>
     <li style="--i: 3">
-      <a class="row cv" :href="CONTACTS.cv" download>
-        <span class="lab">Резюме</span><span class="val">PDF, 2 сторінки</span><span class="act">Завантажити ↓</span>
+      <a class="row cv" :href="CONTACTS.cv[lang]" download>
+        <span class="lab">{{ t('resume') }}</span><span class="val">{{ t('resumeMeta') }}</span><span class="act">{{ t('download') }}</span>
       </a>
     </li>
   </ul>

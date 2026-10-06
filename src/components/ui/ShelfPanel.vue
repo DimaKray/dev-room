@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { SKILL_GROUPS } from '@/data/skills'
+import { t, tr } from '@/i18n'
 
 const active = ref(SKILL_GROUPS[0].id)
 const group = computed(() => SKILL_GROUPS.find((g) => g.id === active.value)!)
@@ -11,14 +12,14 @@ const total = SKILL_GROUPS.reduce((n, g) => n + g.skills.length, 0)
   <div>
     <div class="tabs" role="tablist">
       <button v-for="g in SKILL_GROUPS" :key="g.id" class="tab" :class="{ on: g.id === active }" role="tab" :aria-selected="g.id === active" @click="active = g.id">
-        {{ g.title }}<small>{{ g.skills.length }}</small>
+        {{ tr(g.title) }}<small>{{ g.skills.length }}</small>
       </button>
     </div>
     <!-- key змушує список програвати появу тегів щоразу, коли міняєш вкладку -->
     <ul :key="active" class="tags">
-      <li v-for="(s, i) in group.skills" :key="s.name" class="tag" :style="{ '--i': i }" :title="s.used ? 'Де використано: ' + s.used : undefined">{{ s.name }}</li>
+      <li v-for="(s, i) in group.skills" :key="i" class="tag" :style="{ '--i': i }" :title="s.used ? t('usedIn') + tr(s.used) : undefined">{{ tr(s.name) }}</li>
     </ul>
-    <p class="hint">Усього {{ total }} навичок. Наведи на тег, щоб побачити, де це застосовано.</p>
+    <p class="hint">{{ t('skillsTotal').replace('{n}', String(total)) }} {{ t('skillsHint') }}</p>
   </div>
 </template>
 

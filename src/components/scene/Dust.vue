@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useLoop } from '@tresjs/core'
+import { perf } from '@/lib/perf'
 import type { Points } from 'three'
 
 // Пил у повітрі: 260 точок, що повільно кружляють і дихають.
-const N = 140
+const N = perf.dust
 const positions = new Float32Array(N * 3)
 for (let i = 0; i < N; i++) {
   positions[i * 3] = (Math.random() - 0.5) * 7

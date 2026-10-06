@@ -6,17 +6,46 @@
     <title>Дмитро Крайнов: web-розробник | Кімната розробника</title>
     <meta name="description" content="Інтерактивне 3D-портфоліо Дмитра Крайнова: web-розробник, верстка, React, Vue, Node.js. Зайди в хатинку в лісі та подивись проєкти." />
     <meta name="theme-color" content="#8672e6" />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
     <meta property="og:title" content="Дмитро Крайнов: кімната розробника" />
     <meta property="og:description" content="3D-хатинка в лісі, у яку можна зайти: проєкти, навички, контакти." />
     <meta property="og:locale" content="uk_UA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Хатинка в лісі: інтерактивне 3D-портфоліо Дмитра Крайнова" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Dmytro Krainov",
+        "alternateName": "Дмитро Крайнов",
+        "jobTitle": "Web developer",
+        "url": "%VITE_SITE_URL%/",
+        "image": "%VITE_SITE_URL%/og-image.png",
+        "address": { "@type": "PostalAddress", "addressLocality": "Kyiv", "addressCountry": "UA" },
+        "sameAs": ["https://github.com/DimaKray", "https://t.me/d_krainov_web"],
+        "knowsAbout": ["HTML", "CSS", "JavaScript", "TypeScript", "React", "Vue", "Node.js", "Three.js", "SEO"]
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
-    <noscript>Для перегляду 3D-портфоліо потрібен JavaScript. Дмитро Крайнов, web-розробник: dima.kray313@gmail.com</noscript>
+    <noscript>
+      <h1>Дмитро Крайнов, web-розробник</h1>
+      <p>Верстка, React, Vue, Node.js, технічне SEO. Київ, Україна.</p>
+      <p>Для перегляду інтерактивного 3D-портфоліо потрібен JavaScript. Пошта: dima.kray313@gmail.com, GitHub: github.com/DimaKray, Telegram: t.me/d_krainov_web</p>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

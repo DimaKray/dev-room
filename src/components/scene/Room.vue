@@ -8,14 +8,19 @@ import {
 import gsap from 'gsap'
 import { useFocusStore } from '@/stores/focus'
 import { gradient } from './toon'
+import { pointer } from '@/lib/pointer'
+import { screenTex, updateScreen } from './screen'
 import { floorWood } from './textures'
 import HotSpot from './HotSpot.vue'
 import Part from './Part.vue'
 
-const props = defineProps<{ night: number }>()
+const props = defineProps<{ night: number; lamp: number }>()
 const store = useFocusStore()
 
 const catRoot = ref<Group>()
+const catHead = ref<Group>()
+const eyes = ref<Group>()
+let blinkAt = 2, blinkUntil = 0
 const catBody = ref<Group>()
 const tail = ref<Group>()
 const plant = ref<Group>()
@@ -75,7 +80,20 @@ watch(() => store.pets, () => {
 
 const { onBeforeRender } = useLoop()
 onBeforeRender(({ elapsed }) => {
-  if (catBody.value) catBody.value.scale.y = 1 + Math.sin(elapsed * 2) * 0.04
+  updateScreen(elapsed) // на екрані друкується код
+  // кіт: дихає, стежить за курсором, кліпає, а якщо курсор довго стоїть, засинає
+  const asleep = performance.now() - pointer.last > 9000
+  if (catBody.value) catBody.value.scale.y = 1 + Math.sin(elapsed * (asleep ? 1.1 : 2)) * 0.04
+  if (catHead.value) {
+    const h = catHead.value
+    h.rotation.y += ((asleep ? 0.25 : pointer.x * 0.8) - h.rotation.y) * 0.06
+    h.rotation.z += ((asleep ? -0.55 : -pointer.y * 0.3) - h.rotation.z) * 0.06
+  }
+  if (eyes.value) {
+    if (elapsed > blinkAt) { blinkUntil = elapsed + 0.14; blinkAt = elapsed + 2.5 + Math.random() * 3 }
+    const closed = asleep || elapsed < blinkUntil
+    eyes.value.scale.y += ((closed ? 0.08 : 1) - eyes.value.scale.y) * 0.4
+  }
   if (tail.value) tail.value.rotation.z = 0.6 + Math.sin(elapsed * 3) * 0.45
   if (plant.value) plant.value.rotation.z = Math.sin(elapsed * 1.2) * 0.03
   if (handM.value) handM.value.rotation.z = -elapsed * 0.6
@@ -146,7 +164,7 @@ onBeforeRender(({ elapsed }) => {
     <Part kind="box" :args="[1.6, 0.95, 0.06]" spot="monitor" color="#2a2340" :position="[0, 1.55, -2.38]" />
     <TresMesh ref="screen" :position="[0, 1.55, -2.34]">
       <TresPlaneGeometry :args="[1.48, 0.83]" />
-      <TresMeshStandardMaterial color="#0c2a33" emissive="#62f0ff" :emissive-intensity="1" />
+      <TresMeshStandardMaterial color="#000000" emissive="#ffffff" :emissive-map="screenTex" :emissive-intensity="1" />
     </TresMesh>
     <Part kind="box" :args="[1, 0.04, 0.3]" spot="monitor" color="#3a3158" :position="[0, 0.87, -1.85]" :ink="0.012" />
     <Part kind="cyl" :args="[0.07, 0.06, 0.12, 16]" color="#ffffff" :position="[0.95, 0.91, -1.95]" :ink="0.012" />
@@ -169,14 +187,16 @@ onBeforeRender(({ elapsed }) => {
 
     <!-- лампа з видимим конусом світла -->
     <TresGroup :position="[-1.2, 0.85, -2.3]">
-      <Part kind="cyl" :args="[0.15, 0.18, 0.04, 20]" color="#2a2340" :position="[0, 0.02, 0]" :ink="0.012" />
-      <Part kind="cyl" :args="[0.02, 0.02, 0.7, 8]" color="#2a2340" :position="[0, 0.35, 0]" :ink="0.012" />
-      <Part kind="cone" :args="[0.22, 0.28, 20]" color="#ffd166" :position="[0, 0.75, 0]" :ink="0.015" emissive="#ffb066" :emissive-intensity="night * 1.5" />
-      <TresMesh v-if="night > 0.02" :position="[0, 0.3, 0]">
+      <Part kind="cyl" :args="[0.15, 0.18, 0.04, 20]" spot="lamp" color="#2a2340" :position="[0, 0.02, 0]" :ink="0.012" />
+      <Part kind="cyl" :args="[0.02, 0.02, 0.7, 8]" spot="lamp" color="#2a2340" :position="[0, 0.35, 0]" :ink="0.012" />
+      <Part kind="cone" :args="[0.22, 0.28, 20]" spot="lamp" color="#ffd166" :position="[0, 0.75, 0]" :ink="0.015" emissive="#ffb066" :emissive-intensity="lamp * (0.3 + night * 1.2)" />
+      <TresMesh v-if="lamp > 0.02" :position="[0, 0.3, 0]">
         <TresCylinderGeometry :args="[0.2, 0.75, 0.62, 24, 1, true]" />
-        <TresMeshBasicMaterial color="#ffc470" transparent :opacity="night * 0.2" :depth-write="false" :blending="AdditiveBlending" :side="DoubleSide" />
+        <TresMeshBasicMaterial color="#ffc470" transparent :opacity="lamp * (0.07 + night * 0.17)" :depth-write="false" :blending="AdditiveBlending" :side="DoubleSide" />
       </TresMesh>
     </TresGroup>
+
+    <HotSpot id="lamp" :position="[-1.2, 1.3, -2.3]" :size="[0.5, 0.9, 0.5]" />
 
     <!-- полиця з книгами -->
     <TresGroup :position="[2.3, 2.2, -2.78]">
@@ -188,15 +208,19 @@ onBeforeRender(({ elapsed }) => {
     <!-- кіт Баг -->
     <TresGroup ref="catRoot" :position="[1.8, 0.28, -0.5]" :rotation="[0, -0.6, 0]">
       <TresGroup ref="catBody">
-        <Part kind="sphere" :args="[0.35, 24, 24]" spot="cat" map="fur" :repeat="[3, 1]" color="#ffae5c" :scale="[1.3, 0.8, 0.9]" :ink="0.02" />
+        <Part kind="sphere" :args="[0.35, 24, 24]" color="#ffae5c" map="fur" :repeat="[3, 1]" spot="cat" :scale="[1.3, 0.8, 0.9]" :ink="0.02" />
       </TresGroup>
-      <Part kind="sphere" :args="[0.22, 24, 24]" spot="cat" map="fur" :repeat="[2, 1]" color="#ffae5c" :position="[0.45, 0.2, 0]" :ink="0.02" />
-      <Part kind="cone" :args="[0.07, 0.14, 4]" spot="cat" color="#ff8f45" :position="[0.5, 0.42, 0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
-      <Part kind="cone" :args="[0.07, 0.14, 4]" spot="cat" color="#ff8f45" :position="[0.5, 0.42, -0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
-      <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0.63, 0.26, 0.09]" :ink="0" />
-      <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0.63, 0.26, -0.09]" :ink="0" />
+      <TresGroup ref="catHead" :position="[0.45, 0.2, 0]">
+        <Part kind="sphere" :args="[0.22, 24, 24]" color="#ffae5c" map="fur" :repeat="[2, 1]" spot="cat" :ink="0.02" />
+        <Part kind="cone" :args="[0.07, 0.14, 4]" color="#ff8f45" spot="cat" :position="[0.05, 0.22, 0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
+        <Part kind="cone" :args="[0.07, 0.14, 4]" color="#ff8f45" spot="cat" :position="[0.05, 0.22, -0.1]" :rotation="[0, 0, -0.2]" :ink="0.012" />
+        <TresGroup ref="eyes" :position="[0.18, 0.06, 0]">
+          <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0, 0, 0.09]" :ink="0" />
+          <Part kind="sphere" :args="[0.035, 12, 12]" color="#0d0816" :position="[0, 0, -0.09]" :ink="0" />
+        </TresGroup>
+      </TresGroup>
       <TresGroup ref="tail" :position="[-0.42, 0.05, 0]">
-        <Part kind="cyl" :args="[0.05, 0.04, 0.5, 10]" spot="cat" color="#ffae5c" :position="[-0.25, 0.1, 0]" :rotation="[0, 0, Math.PI / 2]" :ink="0.015" />
+        <Part kind="cyl" :args="[0.05, 0.04, 0.5, 10]" color="#ffae5c" spot="cat" :position="[-0.25, 0.1, 0]" :rotation="[0, 0, Math.PI / 2]" :ink="0.015" />
       </TresGroup>
     </TresGroup>
     <HotSpot id="cat" :position="[1.8, 0.4, -0.5]" :size="[1.1, 0.8, 1]" />

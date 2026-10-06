@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import gsap from 'gsap'
 import { useFocusStore } from '@/stores/focus'
+import { t } from '@/i18n'
 
 const store = useFocusStore()
 const root = ref<HTMLElement>()
@@ -21,12 +22,12 @@ watch([barDone, () => store.canvasReady], ([b, c]) => {
   gsap.to(root.value!, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'power4.inOut', onComplete: () => (gone.value = true) })
 })
 
-const title = 'Кімната розробника'.split('')
+const title = computed(() => t('title').split(''))
 </script>
 
 <template>
   <div v-if="!gone" ref="root" class="loader">
-    <h1 class="loader-title" aria-label="Кімната розробника">
+    <h1 class="loader-title" :aria-label="t('title')">
       <span v-for="(ch, i) in title" :key="i" class="clip" aria-hidden="true"><span>{{ ch === ' ' ? '\u00A0' : ch }}</span></span>
     </h1>
     <div class="track"><div ref="bar" class="fill" /></div>

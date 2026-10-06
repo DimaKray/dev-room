@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { useFocusStore } from '@/stores/focus'
-import type { SpotId } from '@/data/spots'
+import { blip } from '@/lib/sound'
+import type { HoverId, SpotId } from '@/data/spots'
 
 // Невидима коробка-«кнопка» навколо об'єкта. Поки ми зовні, вона не реагує.
-defineProps<{ id: SpotId; position: [number, number, number]; size: [number, number, number] }>()
+defineProps<{ id: HoverId; position: [number, number, number]; size: [number, number, number] }>()
 const store = useFocusStore()
 
-function click(id: SpotId) { if (store.inside) store.go(id) }
-function enter(id: SpotId) { if (!store.inside) return; store.hovered = id; document.body.style.cursor = 'pointer' }
+function click(id: HoverId) {
+  if (!store.inside) return
+  if (id === 'lamp') { store.toggleLamp(); if (store.sound) blip() } // лампа вмикається, а не відкриває розділ
+  else store.go(id as SpotId)
+}
+function enter(id: HoverId) { if (!store.inside) return; store.hovered = id; document.body.style.cursor = 'pointer' }
 function leave() { store.hovered = null; document.body.style.cursor = '' }
 </script>
 

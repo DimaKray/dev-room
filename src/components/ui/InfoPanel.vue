@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useFocusStore } from '@/stores/focus'
+import { t, tr } from '@/i18n'
 import { PROJECTS } from '@/data/projects'
 import ShelfPanel from './ShelfPanel.vue'
 import CatPanel from './CatPanel.vue'
@@ -14,14 +15,14 @@ const store = useFocusStore()
       <!-- key змушує панель програвати анімацію при зміні об'єкта -->
       <Transition name="swap" mode="out-in">
         <div :key="store.current" class="body">
-          <button class="close" aria-label="Закрити" @click="store.reset()">✕</button>
-          <h2>{{ store.spot.title }}</h2>
-          <p class="lead">{{ store.spot.text }}</p>
+          <button class="close" :aria-label="t('close')" @click="store.reset()">✕</button>
+          <h2>{{ tr(store.spot.title) }}</h2>
+          <p class="lead">{{ tr(store.spot.text) }}</p>
 
           <ul v-if="store.current === 'monitor'" class="cards">
-            <li v-for="(p, i) in PROJECTS" :key="p.title" :style="{ '--i': i }">
-              <h3>{{ p.title }}</h3>
-              <p>{{ p.text }}</p>
+            <li v-for="(p, i) in PROJECTS" :key="i" :style="{ '--i': i }">
+              <h3>{{ tr(p.title) }}</h3>
+              <p>{{ tr(p.text) }}</p>
               <div class="tags"><span v-for="t in p.stack" :key="t">{{ t }}</span></div>
             </li>
           </ul>

@@ -2,7 +2,7 @@
 import { computed, onMounted, shallowRef } from 'vue'
 import { BackSide } from 'three'
 import { useFocusStore } from '@/stores/focus'
-import type { SpotId } from '@/data/spots'
+import type { HoverId } from '@/data/spots'
 import { gradient, INK } from './toon'
 import { getTex, scaleBoxUV } from './textures'
 
@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<{
   tile?: number        // для коробок: скільки одиниць світу займає один повтор
   repeat?: number[]    // для сфер, циліндрів і конусів: скільки повторів по колу/висоті
   rotateMap?: boolean  // повернути текстуру на 90° (волокна вздовж циліндра)
-  spot?: SpotId        // до якого клікабельного об'єкта належить: світиться при наведенні
+  spot?: HoverId        // до якого клікабельного об'єкта належить: світиться при наведенні
 }>(), {
   position: () => [0, 0, 0],
   rotation: () => [0, 0, 0],

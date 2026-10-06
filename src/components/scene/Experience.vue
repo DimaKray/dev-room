@@ -4,19 +4,25 @@ import { TresCanvas } from '@tresjs/core'
 import { Color, NoToneMapping } from 'three'
 import gsap from 'gsap'
 import { useFocusStore } from '@/stores/focus'
+import { perf } from '@/lib/perf'
 import CameraRig from './CameraRig.vue'
 import Room from './Room.vue'
 import Cabin from './Cabin.vue'
 import Forest from './Forest.vue'
 import Dust from './Dust.vue'
 import Markers from './Markers.vue'
+import Weather from './Weather.vue'
 
 const store = useFocusStore()
 
-// t: 0 = день, 1 = ніч. Одне число анімується GSAP, усе світло рахується з нього.
-const env = reactive({ t: 0 })
+// t: 0 = день, 1 = ніч; dim: погода притемнює світло; lamp: лампа на столі.
+// Усе анімується GSAP, а світло рахується з цих трьох чисел.
+const env = reactive({ t: store.night ? 1 : 0, dim: 1, lamp: store.lampOn ? 1 : 0 })
 watch(() => store.night, (n) => gsap.to(env, { t: n ? 1 : 0, duration: 1.4, ease: 'power2.inOut' }))
-const mix = (day: number, night: number) => day + (night - day) * env.t
+watch(() => store.weather, (w) => gsap.to(env, { dim: w === 'rain' ? 0.72 : w === 'snow' ? 0.9 : 1, duration: 1.2 }))
+watch(() => store.lampOn, (on) => gsap.to(env, { lamp: on ? 1 : 0, duration: 0.35 }))
+
+const mix = (day: number, night: number) => (day + (night - day) * env.t) * env.dim
 const hex = (day: string, night: string) => '#' + new Color(day).lerp(new Color(night), env.t).getHexString()
 </script>
 
@@ -34,8 +40,8 @@ const hex = (day: string, night: string) => '#' + new Color(day).lerp(new Color(
       :color="hex('#ffe2bd', '#a9bcff')"
       :intensity="mix(2.2, 0.9)"
       cast-shadow
-      :shadow-mapSize-width="2048"
-      :shadow-mapSize-height="2048"
+      :shadow-mapSize-width="perf.shadowSize"
+      :shadow-mapSize-height="perf.shadowSize"
       :shadow-camera-left="-6"
       :shadow-camera-right="6"
       :shadow-camera-top="6"
@@ -44,15 +50,16 @@ const hex = (day: string, night: string) => '#' + new Color(day).lerp(new Color(
     />
     <!-- місячне світло з вікна (його ж показує промінь у кімнаті) -->
     <TresSpotLight :position="[-3.3, 2.1, -0.6]" color="#a9c4ff" :intensity="mix(0, 35)" :angle="0.7" :penumbra="1" :distance="12" :decay="1.6" />
-    <!-- лампа на столі -->
-    <TresPointLight :position="[-1.2, 1.7, -2.1]" color="#ffb066" :intensity="mix(0, 8)" :distance="7" />
+    <!-- лампа на столі: її можна вимкнути кліком -->
+    <TresPointLight :position="[-1.2, 1.7, -2.1]" color="#ffb066" :intensity="env.lamp * (1.2 + env.t * 7)" :distance="7" />
     <!-- неон: стоїть далі від стіни, щоб не було засвіченої плями -->
     <TresPointLight :position="[0, 3.0, -1.6]" color="#ff6fb5" :intensity="mix(0, 5)" :distance="9" />
 
     <Forest :night="env.t" />
     <Cabin />
-    <Room :night="env.t" />
+    <Room :night="env.t" :lamp="env.lamp" />
     <Dust />
+    <Weather />
     <Markers />
   </TresCanvas>
 </template>

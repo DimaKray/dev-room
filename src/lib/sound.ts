@@ -1,7 +1,7 @@
 // Звуки через Web Audio API: без жодних аудіофайлів.
 let ctx: AudioContext | null = null
 
-function audio(): AudioContext | null {
+export function audio(): AudioContext | null {
   const AC = window.AudioContext || (window as any).webkitAudioContext
   if (!AC) return null
   ctx ??= new AC()

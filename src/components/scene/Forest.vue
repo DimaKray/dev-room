@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useLoop } from '@tresjs/core'
 import type { Mesh, Points, PointLight } from 'three'
 import Part from './Part.vue'
+import { perf } from '@/lib/perf'
 import { getTex } from './textures'
 
 const props = defineProps<{ night: number }>()
@@ -29,7 +30,7 @@ const blocked = (x: number, z: number) =>
   (Math.abs(x) < 5.6 && Math.abs(z) < 4.6)
 
 const trees: { x: number; z: number; s: number; round: boolean; c: string }[] = []
-for (let g = 0; trees.length < 38 && g < 800; g++) {
+for (let g = 0; trees.length < perf.trees && g < 800; g++) {
   const a = rand() * Math.PI * 2, r = 7 + rand() * 19
   const x = Math.cos(a) * r, z = Math.sin(a) * r
   if (blocked(x, z)) continue
@@ -38,7 +39,7 @@ for (let g = 0; trees.length < 38 && g < 800; g++) {
 }
 
 const bits: { x: number; z: number; s: number; bush: boolean; c: string }[] = []
-for (let g = 0; bits.length < 16 && g < 400; g++) {
+for (let g = 0; bits.length < perf.bits && g < 400; g++) {
   const a = rand() * Math.PI * 2, r = 5 + rand() * 12
   const x = Math.cos(a) * r, z = Math.sin(a) * r
   if (blocked(x, z)) continue
@@ -54,7 +55,7 @@ const hills = Array.from({ length: 10 }, (_, i) => {
 
 // трава
 const tufts: { x: number; z: number; s: number; r: number }[] = []
-for (let g = 0; tufts.length < 40 && g < 500; g++) {
+for (let g = 0; tufts.length < perf.tufts && g < 500; g++) {
   const a = rand() * Math.PI * 2, r = 3.5 + rand() * 12
   const x = Math.cos(a) * r, z = Math.sin(a) * r
   if ((Math.abs(x) < 1.5 && z > 0) || (Math.abs(x) < 4.2 && Math.abs(z) < 3.8) || Math.hypot(x + 6.8, z - 3.2) < 3) continue
@@ -64,7 +65,7 @@ for (let g = 0; tufts.length < 40 && g < 500; g++) {
 // квіти вздовж стежки
 const flowerCols = ['#ff5fa8', '#ffc83d', '#ffffff', '#8a63ff', '#ff7b5e']
 const flowers: { x: number; z: number; c: string }[] = []
-for (let i = 0; i < 12; i++) {
+for (let i = 0; i < perf.flowerPairs; i++) {
   flowers.push({ x: -1.3 - rand() * 0.4, z: 4 + i * 0.7, c: flowerCols[i % 5] })
   flowers.push({ x: 1.3 + rand() * 0.4, z: 4.3 + i * 0.7, c: flowerCols[(i + 2) % 5] })
 }
@@ -80,7 +81,7 @@ const flames = ref<Mesh[]>([])
 const fireLight = ref<PointLight>()
 
 // світлячки
-const N = 70
+const N = perf.flies
 const pos = new Float32Array(N * 3)
 for (let i = 0; i < N; i++) {
   const a = rand() * Math.PI * 2, r = 4 + rand() * 11

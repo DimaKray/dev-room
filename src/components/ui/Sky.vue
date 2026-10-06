@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFocusStore } from '@/stores/focus'
+import { MOON, SUN, tr } from '@/i18n'
+import { thunder } from '@/lib/ambient'
 
 const store = useFocusStore()
 
@@ -23,18 +26,50 @@ const clouds = [
   { top: 11, w: 210, dur: 200, delay: -160 },
   { top: 34, w: 150, dur: 190, delay: -15 },
 ]
+
+// ---- блискавка під час дощу ----
+const flash = ref(false)
+let lightning = 0
+function schedule(first = false) {
+  lightning = window.setTimeout(() => {
+    flash.value = true
+    setTimeout(() => (flash.value = false), 120)
+    setTimeout(() => { flash.value = true; setTimeout(() => (flash.value = false), 90) }, 230)
+    setTimeout(thunder, 500 + Math.random() * 900)
+    schedule()
+  }, first ? 3000 : 7000 + Math.random() * 12000)
+}
+watch(() => store.weather, (w) => { clearTimeout(lightning); if (w === 'rain') schedule(true) })
+
+// ---- пасхалки: клік по сонцю чи місяцю ----
+const sun = ref<HTMLElement>()
+const moon = ref<HTMLElement>()
+const wink = ref(false)
+let taps = 0, tapTimer = 0
+function onClick(e: MouseEvent) {
+  const body = store.night ? moon.value : sun.value
+  if (!body) return
+  const b = body.getBoundingClientRect()
+  if (e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom) return
+  wink.value = true; setTimeout(() => (wink.value = false), 700)
+  const pool = store.night ? MOON : SUN
+  store.say(tr(pool[Math.floor(Math.random() * pool.length)]))
+  taps++; clearTimeout(tapTimer); tapTimer = window.setTimeout(() => (taps = 0), 2500)
+  if (taps >= 5) { taps = 0; store.boom() } // 5 швидких кліків = феєрверк
+}
+onMounted(() => window.addEventListener('click', onClick))
+onBeforeUnmount(() => { window.removeEventListener('click', onClick); clearTimeout(lightning) })
 </script>
 
 <template>
-  <div class="sky" :class="{ night: store.night }" aria-hidden="true">
+  <div class="sky" :class="[store.weather, { night: store.night }]" aria-hidden="true">
     <div class="layer day" />
     <div class="layer nightbg" />
     <div class="stars"><i v-for="(s, i) in stars" :key="i" :style="{ left: s.left, top: s.top, width: s.size, height: s.size, animationDelay: s.delay, animationDuration: s.dur }" /></div>
     <i class="shoot" />
-    <div class="sun" />
-    <div class="moon" />
+    <div ref="sun" class="sun" :class="{ wink }" />
+    <div ref="moon" class="moon" :class="{ wink }" />
 
-    <!-- хмарка описана один раз, далі її лише повторюємо -->
     <svg width="0" height="0" style="position:absolute">
       <defs>
         <g id="cloud-shape">
@@ -48,7 +83,10 @@ const clouds = [
       <use href="#cloud-shape" class="outline" />
       <use href="#cloud-shape" class="fill" />
     </svg>
+
+    <div class="gloom" />
   </div>
+  <div class="flash" :class="{ on: flash }" aria-hidden="true" />
 </template>
 
 <style scoped>
@@ -78,6 +116,8 @@ const clouds = [
   background: radial-gradient(circle at 30% 35%, #d8d2b8 0 9px, transparent 10px), radial-gradient(circle at 65% 60%, #d8d2b8 0 12px, transparent 13px), radial-gradient(circle at 55% 22%, #d8d2b8 0 6px, transparent 7px), #fff6d0;
   box-shadow: 0 0 50px 14px rgba(255,246,208,.4); }
 .night .moon { opacity: 1; transform: translateY(0); }
+.wink { animation: wink .7s ease; }
+@keyframes wink { 30% { transform: scale(1.25) rotate(-12deg); } 60% { transform: scale(.9) rotate(8deg); } }
 
 .cloud { position: absolute; left: 0; animation: drift linear infinite; transition: opacity 1.6s; }
 .cloud use { transition: fill 1.6s; }
@@ -85,5 +125,15 @@ const clouds = [
 .cloud .fill { fill: #ffffff; }
 .night .cloud { opacity: .55; }
 .night .cloud .fill { fill: #5a4aa0; }
+.rain .cloud .fill { fill: #8d96b5; }
+.rain.night .cloud .fill { fill: #3d3a6b; }
 @keyframes drift { from { transform: translateX(-40vw); } to { transform: translateX(120vw); } }
+
+/* погода: дощ темнить небо, сніг робить його молочним */
+.gloom { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease, background 1.4s ease; }
+.rain .gloom { opacity: 1; background: linear-gradient(rgba(60,70,105,.55), rgba(45,55,90,.35)); }
+.snow .gloom { opacity: 1; background: rgba(235,242,255,.26); }
+
+.flash { position: fixed; inset: 0; z-index: 5; background: #fff; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.flash.on { opacity: .55; transition: none; }
 </style>

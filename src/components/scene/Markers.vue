@@ -2,16 +2,17 @@
 import { useLoop } from '@tresjs/core'
 import { CanvasTexture, SRGBColorSpace, type Sprite } from 'three'
 import { useFocusStore } from '@/stores/focus'
-import type { SpotId } from '@/data/spots'
+import type { HoverId } from '@/data/spots'
 
 // Пульсуючі кільця над усім, на що можна клікнути. Зовні це двері, всередині монітор, полиця, кіт, рослина.
 const store = useFocusStore()
-const list: { id: SpotId; pos: [number, number, number]; outside?: boolean }[] = [
+const list: { id: HoverId; pos: [number, number, number]; outside?: boolean }[] = [
   { id: 'outside', pos: [0, 2.8, 3.4], outside: true },
   { id: 'monitor', pos: [0, 2.45, -2.3] },
   { id: 'shelf', pos: [2.3, 3.4, -2.7] },
   { id: 'cat', pos: [1.8, 1.2, -0.5] },
   { id: 'plant', pos: [-2.8, 1.7, -2.5] },
+  { id: 'lamp', pos: [-1.2, 1.95, -2.3] },
 ]
 
 const tex = (() => {
